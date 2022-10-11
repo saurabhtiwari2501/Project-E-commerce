@@ -124,6 +124,47 @@ const createUser = async function (req,res){
           res.status(500).send({ status: false, msg: error.message });
         }
       };
+
+
+
+      const loginUser = async function (res, req) {
+        try {
+            let data = req.body;
+            if (validate.isValidBody(data))
+                return res.status(400).send({ status: false, msg: "Email and Password is Requierd" })
+    
+            const { email, password } = data;
+    
+            if (!email)
+                return res.status(400).send({ status: false, msg: "User Email is Requierd" })
+    
+            if (!password)
+                return res.status(400).send({ status: false, msg: "User Password is Requierd" })
+    
+            if (!validate.isValidEmail(email))
+                return res.status(400).send({ status: false, msg: "Enter Valid Email Id" })
+    
+            let user = await userModel.findOne({ email })
+            if (!user)
+                return res.status(400).send({ status: false, msg: "User not Exist" })
+    
+            let actualPassword = await bcrypt.compare(password, user.password);
+    
+            if (!actualPassword)
+                return res.status(400).send({ status: false, msg: "Incorrect password" })
+    
+    
+            //Tocken Generation
+    
+            let tocken = jwt.sign({ userId: user._id }, "Product Managemnet", { expiresIn: '2d' })
+    
+            res.status(200).send({ status: true, message: "User login successfully", data: { userId: user._id, tocken: tocken} })
+    
+        } catch (err) {
+            res.status(500).send({ status: false, Error: err.message })
+        }
+    };
+    
     
 
 
@@ -132,3 +173,4 @@ const createUser = async function (req,res){
 
 
 module.exports.createUser=createUser
+module.exports.loginUser=loginUser
