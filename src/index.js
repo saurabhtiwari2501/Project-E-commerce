@@ -1,9 +1,12 @@
 const express = require('express');
 const route = require('../src/routes/routes');
 const  mongoose  = require('mongoose');
+const multer = require('multer')
+//const bcyrpt = require('bcrypt')
 const app = express();
 
 app.use(express.json());
+app.use(multer().any())
 
 
 

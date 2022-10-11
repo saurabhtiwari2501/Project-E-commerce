@@ -4,9 +4,12 @@ const userController = require ("../controller/userController");
 
 
 
-router.get("/test-me", function (req, res) {
-    res.send("server is running ")
-})
+//router.get("/test-me", function (req, res) {
+  //  res.send("server is running ")
+//})
+
+
+router.post("/register",userController.createUser)
 
 
 
