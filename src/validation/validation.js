@@ -1,24 +1,51 @@
-const mongoose = require('mongoose')
 
+const mongoose = require('mongoose');
 
-
-const isValidSpace = function (value) {
-    if (typeof value === 'undefined' || value === null) return false
-    if (typeof value === 'string' && value.trim().length === 0) return false
-    return true;
-}
-const isvalidRequest = function (body) {
-    return Object.keys(body).length > 0 //plz enter the data in the body
+const isValid = (value) => {
+    if (typeof value === "undefined" || typeof value === "null") return true;
+    if (typeof value === "string" && value.trim().length == 0) return true;
+    if (typeof value === "object" && Object.keys(value).length == 0) return true;
+    return false;
 }
 
-const isvalidName = function(fname){
-    return /^[A-Z][a-z]{0,20}[A-Za-z]$/.test(fname)
+const isValidPincode = (num) => {
+    return /^[0-9]{6}$/.test(num);
 }
 
-const isValidMobileNumber = function (number) {
-    return /^[6-9]\d{9}$/.test(number) //9587412693
+const isValidBody = (reqBody) => {
+    return Object.keys(reqBody).length == 0;
 }
 
+const isValidString = (String) => {
+    return /\d/.test(String)
+}
 
+const isValidPhone = (Mobile) => {
+    return /^[6-9]\d{9}$/.test(Mobile)
+};
 
-module.exports = {isValidSpace,isvalidRequest,isvalidName,isValidMobileNumber}
+const isValidEmail = (Email) => {
+    return /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/.test(Email)
+};
+
+const isValidPwd = (Password) => {
+    return /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,15}$/.test(Password)
+};
+
+const isValidObjectId = (objectId) => {
+    return mongoose.Types.ObjectId.isValid(objectId);
+}
+
+const isValidPrice = (price) => {
+    return /^[1-9]\d{0,7}(?:\.\d{1,2})?$/.test(price)
+}
+
+const isValidSize = (sizes) => {
+    return ["S", "XS", "M", "X", "L", "XXL", "XL"].includes(sizes);
+}
+
+const isValidNum = (num) => {
+    return /^[0-9]*[1-9]+$|^[1-9]+[0-9]*$/.test(num);
+}
+
+module.exports = { isValid, isValidBody, isValidString, isValidPhone, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize, isValidNum }

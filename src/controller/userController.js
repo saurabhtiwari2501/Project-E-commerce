@@ -1,176 +1,151 @@
 const userModel = require("../models/userModel")
-const v = require("../validation/validation")
+const validate = require("../validation/validation")
 const bcrypt = require('bcrypt')
-
+const jwt = require('jsonwebtoken')
 const aws = require("aws-sdk");
-
-// aws.config.update({
-//     accessKeyId: "AKIAY3L35MCRZNIRGT6N",
-//     secretAccessKey: "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", //buket create
-//     region: "ap-south-1"
-// })
 
 aws.config.update({
   accessKeyId: "AKIAY3L35MCRZNIRGT6N",
   secretAccessKey: "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",
   region: "ap-south-1"
-})
+});
 
+const uploadFile = async (files) => {
+  return new Promise(function (resolve, reject) {
+    let s3 = new aws.S3({ apiVersion: '2006-03-01' });
 
-
-let uploadFile= async ( file) =>{
-   return new Promise( function(resolve, reject) {
-    // this function will upload file to aws and return the link
-    let s3= new aws.S3({apiVersion: '2006-03-01'}); // we will be using the s3 service of aws
-
-    var uploadParams= {
-        ACL: "public-read", // public
-        Bucket: "classroom-training-bucket",  //HERE  //user/object store
-        Key: "abc/" + file.originalname, //HERE  // key+obj
-        Body: file.buffer //
-    }
-
-
-    s3.upload( uploadParams, function (err, data ){ //callback
-        if(err) {
-            return reject({"error": err})
-        }
-        console.log(data)
-        console.log("file uploaded succesfully")
-        return resolve(data.Location)  
-    })
-
-
-   })
-}
-
-
-
-
-const createUser = async function (req,res){
-    try{
-
-      let files= req.files
-      let uploadedFileURL
-      if(files && files.length > 0){
-          //upload to s3 and get the uploaded link
-          // res.send the link back to frontend/postman
-           uploadedFileURL= await uploadFile( files[0] )
-           
-      }
-     // let profileImage
-        let data = req.Body
-        data.profileImage=uploadedFileURL
-        if (!v.isvalidRequest(data)) return res.status(400).send({ status: false, message: 'user data is required in body' })
-      
-         const{fname,lname,email,phone,password,address:{shipping,billing}}=data
-          // ------------------------ validation start -------------------------------
-       // if (Object.keys(data) == 0) { return res.status(400).send({ status: false, message: 'No data provided' }) }
-        
-        
-        if (fname) {
-            return res.status(400).send({ status: false, msg: " fname must be required !" })
-          }
-      
-          if (!v.isvalidName(fname)) { return res.status(400).send({ status: false, msg: "fname should start with Uppercase:- Fname" }) }
-      
-          if (!lname) { return res.status(400).send({ status: false, msg: " lname must be required !" }) }
-      
-          if (!/^[A-Z][a-z]{0,20}[A-Za-z]$/.test(lname)) { return res.status(400).send({ status: false, msg: "lname should start with Uppercase:- Lname" }) }
-          if (!v.isValidSpace(phone)) return res.status(400).send({ status: false, message: 'phone is mandatory' })
-          if (!v.isValidMobileNumber(phone)) return res.status(400).send({ status: false, message: 'Enter a valid 10 digit phone number' })
-
-          //------------email validation------------------------//
-      
-          if (!email) {
-            return res.status(400).send({ status: false, msg: "Email should be mandatory" })
-          }
-      
-          if (!/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email)) {
-            return res.status(400).send({ status: false, msg: "please provide valid email" })
-          }
-      
-          let emailVerify = await userModel.findOne({ email: email })
-      
-          if (emailVerify) {
-            return res.status(400).send({ status: false, msg: "this email already exists please provide another email" })
-          }
-          
-      
-          //------------password validation------------------------//
-          if (!password) {
-            return res.status(400).send({ status: false, msg: "password must be required !" })
-          }
-      
-          if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@])[A-Za-z\d@]{8,}$/.test(password)) {
-            return res.status(400).send({ status: false, msg: "password contain at least 8 chracter like: aQ1@asd5" })
-          }
-           const passwordbc=await bcrypt.hash(password, 10)
-           if(!shipping){
-            return res.status(400).send({stats:false, msg:"shiping details is mandatory"})
-           }
-
-
-           if(!billing){
-            return res.status(400).send({stats:false, msg:"billing details is mandatory"})
-           }
-      
-          let savedata = await userModel.create(data)
-      
-          res.status(201).send({ status: true, data: savedata });
-        }
-        catch (error) {
-          console.log(error)
-          res.status(500).send({ status: false, msg: error.message });
-        }
-      };
-
-
-
-      const loginUser = async function (res, req) {
-        try {
-            let data = req.body;
-            if (validate.isValidBody(data))
-                return res.status(400).send({ status: false, msg: "Email and Password is Requierd" })
-    
-            const { email, password } = data;
-    
-            if (!email)
-                return res.status(400).send({ status: false, msg: "User Email is Requierd" })
-    
-            if (!password)
-                return res.status(400).send({ status: false, msg: "User Password is Requierd" })
-    
-            if (!validate.isValidEmail(email))
-                return res.status(400).send({ status: false, msg: "Enter Valid Email Id" })
-    
-            let user = await userModel.findOne({ email })
-            if (!user)
-                return res.status(400).send({ status: false, msg: "User not Exist" })
-    
-            let actualPassword = await bcrypt.compare(password, user.password);
-    
-            if (!actualPassword)
-                return res.status(400).send({ status: false, msg: "Incorrect password" })
-    
-    
-            //Tocken Generation
-    
-            let tocken = jwt.sign({ userId: user._id }, "Product Managemnet", { expiresIn: '2d' })
-    
-            res.status(200).send({ status: true, message: "User login successfully", data: { userId: user._id, tocken: tocken} })
-    
-        } catch (err) {
-            res.status(500).send({ status: false, Error: err.message })
-        }
+    let uploadParams = {
+      ACL: 'public-read',
+      Bucket: 'classroom-training-bucket',
+      Key: "abc/" + files.originalname,
+      Body: files.buffer
     };
-    
-    
+
+    s3.upload(uploadParams, function (err, data) {
+      if (err) {
+        return reject({ 'error': err });
+      }
+      return resolve(data.Location);
+    })
+  })
+};
+
+
+const createUser = async (req, res) => {
+  try {
+    let data = req.body;
+    let files = req.files;
+
+    if (validate.isValidBody(data)) return res.status(400).send({ status: false, message: "Enter details to create your account" });
+    if (validate.isValid(data.fname)) return res.status(400).send({ status: false, message: "First name is required" });
+    if (validate.isValid(data.lname)) return res.status(400).send({ status: false, message: "Last name is required " });
+    if (!data.email) return res.status(400).send({ status: false, message: "User email-id is required" });
+    if (files.length == 0) return res.status(400).send({ status: false, message: "Please upload profile image" });
+    if (!data.phone) return res.status(400).send({ status: false, message: "User phone number is required" });
+    if (!data.password) return res.status(400).send({ status: false, message: "Password is required" });
+    if (!data.address) return res.status(400).send({ status: false, message: "Address is required" });
+    if (validate.isValid(data.address)) return res.status(400).send({ status: false, message: "Address must contain shipping and billing addresses" });
+    if (validate.isValid(data.address.shipping)) return res.status(400).send({ status: false, message: "Shipping address must contain street, city and pincode" });
+    if (validate.isValid(data.address.shipping.street)) return res.status(400).send({ status: false, message: "Street is required of shipping address" });
+    if (validate.isValid(data.address.shipping.city)) return res.status(400).send({ status: false, message: "City is required of shipping address" });
+    if (validate.isValid(data.address.shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode is required of shipping address " });
+
+    if (!validate.isValidString(data.address.shipping.pincode)) return res.status(400).send({ status: false, message: "Pincode should be in numbers" });
+
+    if (!validate.isValidPincode(data.address.shipping.pincode)) return res.status(400).send({ status: false, message: "Enter a valid pincode" });
+
+    if (validate.isValid(data.address.billing)) return res.status(400).send({ status: false, message: "Billing address must contain street, city and pincode" });
+
+    if (validate.isValid(data.address.billing.street)) return res.status(400).send({ status: false, message: "Street is required of billing address" });
+
+    if (validate.isValid(data.address.billing.city)) return res.status(400).send({ status: false, message: "City is required of billing address" });
+
+    if (validate.isValid(data.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode is required of billing address" });
+
+    if (!validate.isValidString(data.address.billing.pincode)) return res.status(400).send({ status: false, message: "Pincode should be in numbers" });
+
+    if (!validate.isValidPincode(data.address.billing.pincode)) return res.status(400).send({ status: false, message: "Enter a valid pincode" });
+
+    if (validate.isValidString(data.fname)) return res.status(400).send({ status: false, message: "Enter a valid first name and should not contain numbers" });
+
+    if (validate.isValidString(data.lname)) return res.status(400).send({ status: false, message: "Enter a valid last name and should not contain numbers" });
+
+    if (!validate.isValidEmail(data.email)) return res.status(400).send({ status: false, message: "Enter a valid email-id" });
+
+    if (!validate.isValidPhone(data.phone)) return res.status(400).send({ status: false, message: "Enter a valid phone number" });
+
+    if (!validate.isValidPwd(data.password)) return res.status(400).send({ status: false, message: "Password should be 8-15 characters long and must contain one of 0-9,A-Z,a-z and special characters" });
+
+    //checking if email already exist or not
+    let checkEmail = await userModel.findOne({ email: data.email });
+    if (checkEmail) return res.status(400).send({ status: false, message: "Email already exist" });
+
+    //checking if phone number already exist or not
+    let checkPhone = await userModel.findOne({ phone: data.phone });
+    if (checkPhone) return res.status(400).send({ status: false, message: "Phone number already exist" });
+
+    //getting the AWS-S3 link after uploading the user's profileImage
+    let profileImgUrl = await uploadFile(files[0]);
+    data.profileImage = profileImgUrl;
+
+    //hashing the password with bcrypt
+    data.password = await bcrypt.hash(data.password, 10);
+
+    let responseData = await userModel.create(data);
+    res.status(201).send({ status: true, message: "User created successfully", data: responseData })
+  } catch (err) {
+    res.status(500).send({ status: false, error: err.message })
+  }
+};
+
+
+const loginUser = async function (req, res) {
+  try {
+
+    let data = req.body;
+    if (validate.isValidBody(data))
+      return res.status(400).send({ status: false, msg: "Email and Password is Requierd" })
+
+    const { email, password } = data;
+
+    if (!email)
+      return res.status(400).send({ status: false, msg: "User Email is Requierd" })
+
+    if (!password)
+      return res.status(400).send({ status: false, msg: "User Password is Requierd" })
+
+    if (!validate.isValidEmail(email))
+      return res.status(400).send({ status: false, msg: "Enter Valid Email Id" })
+
+    let user = await userModel.findOne({ email })
+    if (!user)
+      return res.status(400).send({ status: false, msg: "User not Exist" })
+
+    let actualPassword = await bcrypt.compare(password, user.password);
+
+    if (!actualPassword)
+      return res.status(400).send({ status: false, msg: "Incorrect password" })
+
+
+    //Tocken Generation
+
+    let tocken = jwt.sign({ userId: user._id }, "Product Managemnet", { expiresIn: '2d' })
+
+    return res.status(200).send({ status: true, message: "User login successfully", data: { userId: user._id, tocken: tocken } })
+
+  }catch (err) {
+    return res.status(500).send({ status: false, msg: err.message })
+  }
+};
 
 
 
 
 
 
-module.exports.createUser=createUser
-module.exports.loginUser=loginUser
+
+
+
+
+module.exports.createUser = createUser
+module.exports.loginUser = loginUser
