@@ -9,7 +9,7 @@ const isValid = (value) => {
 }
 
 const isValidPincode = (num) => {
-    return /^[0-9]{6}$/.test(num);
+    return /^[1-9][0-9]{5}$/.test(num)
 }
 
 const isValidBody = (reqBody) => {
@@ -23,6 +23,11 @@ const isValidString = (String) => {
 const isValidPhone = (Mobile) => {
     return /^[6-9]\d{9}$/.test(Mobile)
 };
+
+const isValidMobile = function (mobile) {
+    var phone = /^[6789][0-9]{9}$/;
+    return phone.test(mobile);
+}
 
 const isValidEmail = (Email) => {
     return /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/.test(Email)
@@ -48,4 +53,27 @@ const isValidNum = (num) => {
     return /^[0-9]*[1-9]+$|^[1-9]+[0-9]*$/.test(num);
 }
 
-module.exports = { isValid, isValidBody, isValidString, isValidPhone, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize, isValidNum }
+
+const isValidRequest = function(data){
+    return Object.keys(data).length > 0
+}
+
+const isValidName = function(name){
+    return /^[a-zA-Z]{2,20}$/.test(name.trim())
+    }
+
+    const isValidStreet = function(street){
+        return /\w*\s*|\w|\D/.test(street.trim())
+        }
+
+        const isValidNumber = function (value) {
+            if (!value || value === undefined) return false
+            if (typeof value !== "number") return false
+            return true
+        }
+
+        const isValidImage = function(profileImage){
+            return /([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)/.test(profileImage)
+           }
+
+module.exports = { isValid, isValidBody, isValidString, isValidPhone, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize, isValidNum,isValidRequest,isValidName,isValidMobile,isValidStreet,isValidNumber, isValidImage }
