@@ -2,10 +2,10 @@
 const mongoose = require('mongoose');
 
 const isValid = (value) => {
-    if (typeof value === "undefined" || typeof value === "null") return true;
-    if (typeof value === "string" && value.trim().length == 0) return true;
-    if (typeof value === "object" && Object.keys(value).length == 0) return true;
-    return false;
+    if (typeof value === "undefined" || typeof value === "null") return false;
+    if (typeof value !== "string" && value.trim().length == 0) return false;
+     
+    return true
 }
 
 const isValidPincode = (num) => {
@@ -16,9 +16,6 @@ const isValidBody = (reqBody) => {
     return Object.keys(reqBody).length == 0;
 }
 
-const isValidString = (String) => {
-    return /\d/.test(String)
-}
 
 const isValidPhone = (Mobile) => {
     return /^[6-9]\d{9}$/.test(Mobile)
@@ -30,7 +27,7 @@ const isValidMobile = function (mobile) {
 }
 
 const isValidEmail = (Email) => {
-    return /^([A-Za-z0-9._]{3,}@[A-Za-z]{3,}[.]{1}[A-Za-z.]{2,6})+$/.test(Email)
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(Email)
 };
 
 const isValidPwd = (Password) => {
@@ -49,11 +46,11 @@ const isValidSize = (sizes) => {
     return ["S", "XS", "M", "X", "L", "XXL", "XL"].includes(sizes);
 }
 
-const isValidNum = (num) => {
-    return /^[0-9]*[1-9]+$|^[1-9]+[0-9]*$/.test(num);
+const isValidNumber = function (value) {
+    if (!value || value === undefined) return false
+    if (typeof value !== "number") return false
+    return true
 }
-
-
 const isValidRequest = function(data){
     return Object.keys(data).length > 0
 }
@@ -62,18 +59,23 @@ const isValidName = function(name){
     return /^[a-zA-Z]{2,20}$/.test(name.trim())
     }
 
-    const isValidStreet = function(street){
-        return /\w*\s*|\w|\D/.test(street.trim())
-        }
-
-        const isValidNumber = function (value) {
-            if (!value || value === undefined) return false
-            if (typeof value !== "number") return false
-            return true
-        }
-
-        const isValidImage = function(profileImage){
+const isValidImage = function(profileImage)
+        {
             return /([/|.|\w|\s|-])*\.(?:jpg|gif|png|jpeg)/.test(profileImage)
-           }
+     }
 
-module.exports = { isValid, isValidBody, isValidString, isValidPhone, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize, isValidNum,isValidRequest,isValidName,isValidMobile,isValidStreet,isValidNumber, isValidImage }
+function isBoolean(val)
+     {
+         if (typeof val === 'string' && val === 'true'  )
+             return true;
+         else if (typeof val === 'string' && val === 'false'  )
+          return true;
+      
+         return false;
+     }
+const isValidTitle = function(title){
+        return /^[a-zA-Z\s$]{2,30}$/.test(title.trim())
+        }
+     
+
+module.exports = { isValidTitle,isValid, isValidBody,isValidPhone, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize,isValidRequest,isValidNumber,isValidName,isValidMobile, isValidImage,isBoolean }
