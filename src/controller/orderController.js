@@ -73,14 +73,14 @@ const createOrder = async function (req, res) {
 }
 
 const updateOrder = async (req, res) => {
-    try {
+    
         let data = req.body;
 
     
         if (validation.isValid(data)) return res.status(400).send({ status: false, message: 'Data is required to cancel your order' });
         
         if (validation.isValid(data.orderId)) return res.status(400).send({ status: false, message: 'OrderId is required and should not be an empty string' });
-        if (!validation.isValidisValidObjectId(data.orderId)) return res.status(400).send({ status: false, message: 'Enter a valid order-Id' });
+        if (!validation.isValidObjectId(data.orderId)) return res.status(400).send({ status: false, message: 'Enter a valid order-Id' });
 
         let findOrder = await orderModel.findOne({ _id: data.orderId, isDeleted: false });
         if (!findOrder) return res.status(404).send({ status: false, message: `No order found with this '${data.orderId}' order-ID` })
@@ -102,9 +102,7 @@ const updateOrder = async (req, res) => {
         let resData = await orderModel.findByIdAndUpdate({ _id: findOrder._id },conditions,{ new: true }
         )
         res.status(200).send({ status: true, message: "Success", data: resData });
-    } catch (err) {
-        res.status(500).send({ status: false, error: err.message })
-    }
+ 
 }
 
 module.exports = { createOrder,updateOrder }

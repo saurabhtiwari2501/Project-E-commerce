@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken')
+const userModel = require("../models/userModel")
+const mongoose = require('mongoose')
 
 const authentication= async (req, res, next) =>{
     try {
@@ -32,9 +34,9 @@ const authorise = async function (req, res, next) {
       if (!decodedToken) return res.status(401).send({ status: false, message: "token is not valid" })
         data = req.params.userId
       var isValid = mongoose.Types.ObjectId.isValid(data)
-  
+      
       if (!isValid) return res.status(400).send({ status: false, message: "Enter Valid User Id" })
-      let userData = await userModel.findById(dataToBeModified)
+      let userData = await userModel.findById(data)
       if (!userData) { return res.status(404).send({ status: false, message: "user not found" }) }
       
       if (userData._id == decodedToken.userId) {
