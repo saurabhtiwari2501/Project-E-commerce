@@ -1,11 +1,10 @@
 
 const mongoose = require('mongoose') 
-//const { isValid } = require('../../../../projectBookmanagement/booksManagementGroup65/src/validations/validation') 
 
 const isValid = function (check) 
 {
     if (check || check == undefined) { return false }
-    if (typeof check === "string" || check.trim().length == 0) { return false }
+    if (typeof check !== "string" || check.trim().length == 0) { return false }
     return true
 }
 const isValidPincode = (num) => {
@@ -62,16 +61,14 @@ const isValidImage = function(profileImage)
 
 function isBoolean(val)
      {
-         if (typeof val === 'string' && val === 'true'  )
-             return true 
-         else if (typeof val === 'string' && val === 'false'  )
-          return true 
+         if (val === true || val === false  )
+         return true 
       
          return false 
      }
 const isValidTitle = function(title){
         return /^[a-zA-Z\s$]{2,30}$/.test(title.trim())
         }
-     
+
 
 module.exports = { isValidTitle,isValid, isValidBody,isValidMobile, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize,isValidRequest,isValidNumber,isValidName, isValidImage,isBoolean }

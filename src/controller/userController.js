@@ -274,7 +274,7 @@ const getUserDetails = async function (req, res) {
     if (userId !== decodedToken.userId)
       return res
         .status(401)
-        .send({ status: false, message: "please login again." })  
+        .send({ status: false, message: "Wrong credentials" })  
 
     const userData = await userModel.findById(userId)  
     if (!userData)

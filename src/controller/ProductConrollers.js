@@ -197,7 +197,7 @@ const updateProduct = async function (req, res) {
       
         if (isDeleted || isDeleted === "") {
             if (isDeleted === "") return res.status(400).send({ status: false, message: " isDeleted Is Required " })
-            if (!validation.isBoolean(isDeleted))
+            if (validation.isBoolean(isDeleted))
                 return res.status(400).send({ status: false, message: "isDeleted Must Be A Boolean Value" })
         }
          
