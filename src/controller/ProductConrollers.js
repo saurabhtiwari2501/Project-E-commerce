@@ -178,10 +178,16 @@ const updateProduct = async function (req, res) {
       
         if (availableSizes || availableSizes === "") {
             if (availableSizes === "") return res.status(400).send({ status: false, message: "Enter atleast One Size" })
-            if (validation.isValidSize(availableSizes)) return res.status(400).send({ status: false, message: "Enter Valid Size" })
-        
-           
-          data.availableSizes
+            if (Array.isArray(availableSizes)) {
+                let enumArr = ["S", "XS", "M", "X", "L", "XXL", "XL"]
+                let uniqueSizes = [...new Set(availableSizes)]
+                for (let ele of uniqueSizes) {
+                    if (enumArr.indexOf(ele) == -1) {
+                        return res.status(400).send({ status: false, message: `'${ele}' is not a valid size, only these sizes are allowed [S, XS, M, X, L, XXL, XL]` })
+                    }
+                }
+                data.availableSizes = uniqueSizes
+            } else return res.status(400).send({ status: false, message: "availableSizes should be of type Array" })
 
         }
 
@@ -223,9 +229,9 @@ const getProducts = async function (req, res) {
         let productData = { isDeleted: false }
 
         if (size) { productData.availableSizes = { $in: size.toUpperCase().split(",").map(x => x.trim()) } }
-        if (priceLessThan && priceGreaterThan) { productData.price = { $gt: priceGreaterThan, $lt: priceLessThan } }
-        if (priceLessThan && !priceGreaterThan) { productData.price = { $lt: priceLessThan } }
-        if (priceGreaterThan && !priceLessThan) { productData.price = { $gt: priceGreaterThan } }
+        if (priceLessThan && priceGreaterThan) { productData.price = { $gte: priceGreaterThan, $lte: priceLessThan } }
+        if (priceLessThan && !priceGreaterThan) { productData.price = { $lte: priceLessThan } }
+        if (priceGreaterThan && !priceLessThan) { productData.price = { $gte: priceGreaterThan } }
 
         if (name) {
             product = await productModel.find({ productData, title: new RegExp(name, 'i') }).sort({ price: 1 }) 
