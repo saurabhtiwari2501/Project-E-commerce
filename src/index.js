@@ -9,7 +9,7 @@ app.use(bodyParser.json())
 app.use(multer().any())
 
 
-mongoose.connect("mongodb+srv://functionup-cohert:2aZSPLpUOON7ZWA2@cluster0.sl0yd7n.mongodb.net/PRODUCTMANAGEMENT", {
+mongoose.connect("mongodb+srv://Saurabh_Tiwari:Project_All@project-all.btz010p.mongodb.net/E_Commerce", {
         useNewUrlParser: true
     })
     .then(() => console.log("MongoDb is connected"))
@@ -20,5 +20,5 @@ app.use('/', route)
 
 
 app.listen(process.env.PORT || 3000, function() {
-    console.log('Express app running on port ' + (process.env.PORT || 3000))
+    console.log('Project is running on port ' + (process.env.PORT || 3000))
 })
