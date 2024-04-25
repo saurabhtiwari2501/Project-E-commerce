@@ -70,5 +70,7 @@ const isValidTitle = function(title){
         return /^[a-zA-Z\s$]{2,30}$/.test(title.trim())
         }
 
+        //add data
+
 
 module.exports = { isValidTitle,isValid, isValidBody,isValidMobile, isValidEmail, isValidPwd, isValidObjectId, isValidPincode, isValidPrice, isValidSize,isValidRequest,isValidNumber,isValidName, isValidImage,isBoolean }
